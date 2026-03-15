@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaTrade Withdrawal</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ================= LIVE BALANCE ================= */
+#balance { font-variant-numeric: tabular-nums; font-size:28px; font-weight:700; margin:6px 0; }
+.balance-up{ color:var(--green); }
+.balance-down{ color:var(--red); }
+
+/* ================= BUTTONS ================= */
+input, select, button{
+  display:block;
+  width:100%;
+  margin:8px 0;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  font-size:14px;
+}
+button{
+  cursor:pointer;
+  background:var(--yellow);
+  font-weight:600;
+}
+button.dark-btn{
+  background:var(--bg-card-2);
+  color:var(--text-main);
+}
+
+/* ================= POPUP / PROGRESS BAR ================= */
+.withdraw-progress-container{
+  position:relative;
+  width:100%;
+  height:20px;
+  background:var(--bg-card-2);
+  border-radius:10px;
+  overflow:hidden;
+  margin:10px 0;
+}
+.withdraw-progress-bar{
+  height:100%;
+  width:0%;
+  background:var(--green);
+  border-radius:10px 0 0 10px;
+  text-align:center;
+  line-height:20px;
+  color:#fff;
+  font-size:12px;
+  transition:width 0.2s linear;
+}
+</style>
+</head>
+<body class="dark">
+
+<div class="card">
+<h2>Withdrawal Dashboard</h2>
+<p>SOL:Connected</p>
+<button onclick="toggleTheme()">Toggle Theme</button>
+</div>
+
+<div class="card">
+<h3>Available Balance</h3>
+<h2 id="balance">$00.00</h2>
+</div>
+
+<div class="card">
+<h3>Select Coin Pair</h3>
+<select id="coin">
+<option value="BTC">BTC</option>
+<option value="ETH">ETH</option>
+<option value="SOL">SOL</option>
+<option value="ADA">ADA</option>
+<option value="XRP">XRP</option>
+<option value="DOGE">DOGE</option>
+<option value="DOT">DOT</option>
+<option value="LTC">LTC</option>
+<option value="AVAX">AVAX</option>
+<option value="TRX">TRX</option>
+</select>
+
+<input type="text" id="wallet" placeholder="Enter Wallet Address">
+<input type="number" id="amount" placeholder="Enter Withdrawal Amount">
+
+<button onclick="unlockWithdrawal()">Request Withdrawal</button>
+
+<!-- Progress bar -->
+<div class="withdraw-progress-container">
+  <div class="withdraw-progress-bar" id="withdrawProgressBar">10s</div>
+</div>
+
+<p id="message"></p>
+</div>
+
+<div class="card">
+<h3>Withdrawal History</h3>
+<ul id="history"></ul>
+</div>
+
+<div class="nav">
+<button onclick="location.href='trade.html'" class="dark-btn">Back to Trade</button>
+<button onclick="location.href='home.html'" class="dark-btn">Dashboard</button>
+</div>
+
+<script>
+// ================= THEME =================
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('theme', document.body.className);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const theme=localStorage.getItem('theme');
+  if(theme) document.body.className = theme;
+});
+
+// ================= BALANCE =================
+let balanceEl = document.getElementById("balance");
+let historyEl = document.getElementById("history");
+let balance = parseFloat(localStorage.getItem("balance"))||00;
+balanceEl.innerText="$"+balance.toFixed(2);
+
+// ================= WALLET VALIDATION =================
+function validateWallet(coin,address){
+ const patterns={
+   BTC:/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/,
+   ETH:/^0x[a-fA-F0-9]{40}$/,
+   SOL:/^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
+   ADA:/^addr1[a-z0-9]{50,}$/,
+   XRP:/^r[0-9a-zA-Z]{24,34}$/,
+   DOGE:/^D{1}[5-9A-HJ-NP-U]{1}[1-9A-HJ-NP-Za-km-z]{32}$/,
+   DOT:/^[1-9A-HJ-NP-Za-km-z]{47,48}$/,
+   LTC:/^[LM3][a-km-zA-HJ-NP-Z1-9]{26,33}$/,
+   AVAX:/^X-[a-zA-Z0-9]{30,}$/,
+   TRX:/^T[a-zA-Z0-9]{33}$/
+ };
+ return patterns[coin].test(address);
+}
+
+// ================= WITHDRAWAL FUNCTION =================
+function unlockWithdrawal(){
+ let coin = document.getElementById("coin").value;
+ let wallet = document.getElementById("wallet").value.trim();
+ let amount = parseFloat(document.getElementById("amount").value);
+ let msg = document.getElementById("message");
+ let bar = document.getElementById("withdrawProgressBar");
+
+ if(!validateWallet(coin,wallet)){
+   msg.innerText="Invalid wallet address format for "+coin;
+   return;
+ }
+ if(!amount || amount<=0){
+   msg.innerText="Enter valid withdrawal amount.";
+   return;
+ }
+ if(balance - amount < 500){
+   msg.innerText="Cannot withdraw below $500 PROFITS.";
+   return;
+ }
+  
+ // Start 10s countdown with progress bar
+ let countdown=170000;
+ bar.style.width="0%";
+ bar.textContent=`${countdown}s`;
+ msg.innerText="Processing Withdrawal...";
+ const interval = setInterval(()=>{
+   countdown--;
+   bar.style.width=((170000-countdown)/17000*100)+"%";
+   bar.textContent=countdown>0? `${countdown}s`:"Withdrawing...";
+   if(countdown<=0){
+     clearInterval(interval);
+     // Complete withdrawal
+     balance -= amount;
+     localStorage.setItem("balance",balance);
+     updateBalanceEl();
+     saveHistory(`Withdrawal ${coin} - $${amount}`);
+     bar.style.width="100%";
+     bar.textContent="Withdrawal Successful!";
+     msg.innerText="Withdrawal Successful!";
+   }
+ },1000);
+}
+
+// ================= HISTORY =================
+function saveHistory(text){
+ let history = JSON.parse(localStorage.getItem("history"))||[];
+ history.push(text + " | " + new Date().toLocaleTimeString());
+ localStorage.setItem("history",JSON.stringify(history));
+ loadHistory();
+}
+function loadHistory(){
+ historyEl.innerHTML="";
+ let list = JSON.parse(localStorage.getItem("history"))||[];
+ list.forEach(item=>historyEl.innerHTML+=`<li>${item}</li>`);
+}
+loadHistory();
+
+// ================= BALANCE DISPLAY =================
+function updateBalanceEl(){ balanceEl.innerText="$"+balance.toFixed(2); }
+
+// ================= AUTO-REFRESH BALANCE =================
+setInterval(()=>{
+ let storedBalance = parseFloat(localStorage.getItem("balance"))||00;
+ if(storedBalance!==balance){
+   balance=storedBalance;
+   updateBalanceEl();
+ }
+},1000);
+</script>
+</body>
+  </html> 
