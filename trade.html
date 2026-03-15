@@ -209,40 +209,7 @@ canvas{
   0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7);}
   70%{box-shadow:0 0 0 8px rgba(255,0,0,0);}
   100%{box-shadow:0 0 0 0 rgba(255,0,0,0);}
-}
-  /* MARKET UPDATE ALERT */
 
-.market-update-alert{
-  margin-top:12px;
-  background:#1a0000;
-  border:2px solid red;
-  border-radius:12px;
-  padding:12px;
-  text-align:center;
-  animation:marketPulse 2s infinite;
-}
-
-.market-update-title{
-  color:red;
-  font-weight:bold;
-  font-size:18px;
-}
-
-.market-update-message{
-  color:#fff;
-  font-size:14px;
-}
-
-.market-update-message a{
-  color:red;
-  font-weight:bold;
-  text-decoration:none;
-}
-
-@keyframes marketPulse{
-  0%{box-shadow:0 0 5px red;}
-  50%{box-shadow:0 0 20px red;}
-  100%{box-shadow:0 0 5px red;}
 }
 
   </style>
@@ -262,7 +229,7 @@ canvas{
 <!-- ================= BALANCE ================= -->
 <div class="balance-card">
   <div class="balance-title">Total Balance:</div>
-  <div id="balance">$500.07</div>
+  <div id="balance">$00.07</div>
 </div>
 
 <!-- ================= TRADE CONTROLS ================= -->
@@ -289,15 +256,6 @@ canvas{
 
 <!-- ================= SIGNAL ================= -->
 <div class="signal">
-  <!-- MARKET UPDATE STOP SESSION ALERT -->
-<div class="market-alert">
-  <div class="alert-title">🚨 MARKET UPDATE TO STOP SESSION 🚨</div>
-  <div class="alert-message">
-    Login your linked Binance email for accurate time update:
-    <a href="https:" target="_blank">GO TO YOUR BINANCE APP</a>
-  </div>
-</div>
-  <div class="signal-top">
     <div>
       <h2 id="signalText">Signal: BUY</h2>
       <small id="signalDesc">Confidence: 80%</small>
@@ -308,11 +266,6 @@ canvas{
     </div>
   </div>
   <button class="btn-dark" onclick="toggleMarketMode()">Change Market Mode</button>
-  <!-- TRADING SIGNAL UPDATE TICKER -->
-<div class="trade-alert-bar">
-  <div class="trade-alert-text">
-    NOTICE:DO NOT MAKE FURTHER DEPOSITS AGAIN TRADE ROOM CLOSED PROCEED TO WITHDRAWAL!!!   
-  </div> 
 </div>
 </div>
 <!-- ================= CHART ================= -->
@@ -366,48 +319,12 @@ canvas{
 
     <button onclick="closeDeposit()" class="btn-dark">Close</button>
   </div>
-</div>
-  </div>
-<div class="popup" id="liquidationPopup">
-  <div class="popup-box">
-
-    <h3>Liquidation Signal</h3>
-
-    <input id="liqAmount" placeholder="Amount">
-    <input id="liqValue" placeholder="Value">
-    <input id="liqPercent" placeholder="Target Percentage">
-
-    <button onclick="startLiquidation()" class="btn-yellow">Confirm</button>
-
-    <div class="deposit-progress-container">
-      <div class="deposit-progress-bar" id="liqBar">0%</div>
-    </div>
-
-    <div id="liqResult" style="margin-top:10px;font-size:14px;"></div>
-
-    <button onclick="closeLiquidation()" class="btn-dark">Close</button>
-
   </div>
 </div>
 <!-- ================= LOADER ================= -->
 <div id="loader" class="loader hidden">
   <div class="spinner"></div>
   <p>Redirecting...</p>
-  <!-- ===== TRADING SIGNAL ALERT BAR ===== -->
-
-<div class="trade-alert-bar">
-
-  <div class="alert-left">
-    <span class="alert-icon">🚨</span>
-    <span class="live-dot"></span>
-  </div>
-
-  <div class="ticker-wrap">
-    <div class="ticker-move">
-      NOTICE:ALERT UPDATE FOR TAP OUT WITHDRAWAL PENDING  "LOW INDEX DEPOSIT".. (warning: you need 2.3 SOL to update correctly) 
-    </div>
-  </div>
-
 </div>
 
 <script>
