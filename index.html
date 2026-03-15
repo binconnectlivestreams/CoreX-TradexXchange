@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binance Signal Connect Streaming CoreX-TradeX-Xchange-CTX</title>
+
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+
+<style>
+/* Layout & Card */
+body { display:flex; justify-content:center; align-items:center; min-height:100vh; background:#0C0C0C; font-family:sans-serif; margin:0; transition: background 0.3s, color 0.3s; color:#f1f5f9; }
+body.light { background:#f9fafb; color:#0f172a; }
+.card { width:90%; max-width:400px; padding:25px; border-radius:12px; background:#0C0C0C; color:#f1f5f9; box-shadow:0 4px 20px rgba(0,0,0,0.3); text-align:center; transition: background 0.3s, color 0.3s; }
+body.light .card { background:#fff; color:#0f172a; }
+input, select, textarea { width:100%; padding:10px; margin:10px 0; border-radius:8px; border:none; }
+button { width:100%; padding:10px; margin-top:15px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; background:#F3BA2F; color:#fff; transition:0.2s; }
+button:hover { opacity:0.9; }
+.logo{width:160px;margin-bottom:15px}
+#errorMsg { display:none; color:#ff4d4d; font-size:12px; margin-top:-5px; margin-bottom:10px; }
+.loader-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#0f172a; display:none; justify-content:center; align-items:center; flex-direction:column; color:white; z-index:9999; }
+body.light .loader-screen { background:#f9fafb; color:#0f172a; }
+.spinner { border:5px solid #1e293b; border-top:5px solid #F3BA2F; border-radius:50%; width:60px; height:60px; animation:spin 1s linear infinite; margin-bottom:15px; }
+@keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <img src="logo.png" class="logo">
+  <h2>CoreXTradex</h2>
+  <p>Binance Signal Connect Streaming CoreX-TradeX-Xchange-CTX</p>
+
+  <!-- NEW THEME BUTTON MATCHING script.js -->
+  <button id="themeToggle" class="theme-btn">Light</button>
+
+  <form id="loginForm">
+    <select id="cryptoSelect" required>
+      <option value="">Select Crypto</option>
+      <option value="BTC">BTC</option>
+      <option value="USDT">USDT (TRC20)</option>
+      <option value="TRX">TRX</option>
+      <option value="SOL">SOL</option>
+      <option value="BNB">BNB</option>
+      <option value="ETH">ETH</option>
+    </select>
+
+    <input type="text" id="wallet" placeholder="Enter Wallet Address" required>
+    <div id="errorMsg">Invalid wallet address format.</div>
+
+    <button type="submit">Enter Dashboard</button>
+  </form>
+</div>
+
+<div class="loader-screen" id="loaderScreen">
+  <div class="spinner"></div>
+  <p>Verifying Details...</p>
+</div>
+
+<script>
+/* ================= THEME (kept as fallback if script.js missing) ================= */
+function toggleTheme(){
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+}
+if(localStorage.getItem("theme") === "light"){ document.body.classList.add("light"); }
+
+/* ================= WALLET VALIDATION ================= */
+const walletPatterns = {
+  BTC: /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/,
+  ETH: /^0x[a-fA-F0-9]{40}$/,
+  BNB: /^0x[a-fA-F0-9]{40}$/,
+  TRX: /^T[a-zA-Z0-9]{33}$/,
+  USDT: /^T[a-zA-Z0-9]{33}$/,
+  SOL: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+};
+
+function validateWallet(address, crypto){
+  return walletPatterns[crypto] && walletPatterns[crypto].test(address);
+}
+
+function autoDetectCrypto(address){
+  for(let coin in walletPatterns){
+    if(walletPatterns[coin].test(address)) return coin;
+  }
+  return null;
+}
+
+document.getElementById("wallet").addEventListener("input", function(){
+  const detected = autoDetectCrypto(this.value);
+  if(detected) document.getElementById("cryptoSelect").value = detected;
+});
+
+/* ================= FORM SUBMIT ================= */
+document.getElementById("loginForm").addEventListener("submit", function(e){
+  e.preventDefault();
+
+  const wallet = document.getElementById("wallet").value.trim();
+  const crypto = document.getElementById("cryptoSelect").value;
+  const errorMsg = document.getElementById("errorMsg");
+
+  if(!validateWallet(wallet, crypto)){
+    errorMsg.style.display = "block";
+    return;
+  } else {
+    errorMsg.style.display = "none";
+  }
+  document.getElementById("loaderScreen").style.display = "flex";
+
+  setTimeout(()=>{
+    window.location.href = "home.html";
+  }, 6000);
+});
+</script>
+
+</body>
+  </html>
