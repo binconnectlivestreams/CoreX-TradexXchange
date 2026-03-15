@@ -74,8 +74,6 @@ canvas{
   border-radius:12px;
   text-align:center;
   color:var(--text-main);
-  body.popup-open{
-  overflow:hidden;
 }
 .wallet-box{
   display:flex;
@@ -160,59 +158,7 @@ canvas{
 
 /* ================= BLINK ================= */
 @keyframes blink{ from{opacity:1;} to{opacity:0.5;} }
-}
-  .trade-alert-bar{
-  width:100%;
-  height:40px;
-  background:#000;
-  overflow:hidden;
-  position:relative;
-}
-
-.trade-alert-text{
-  position:absolute;
-  white-space:nowrap;
-  font-size:15px;
-  font-weight:600;
-  color:#00ff88;
-  animation:tickerMove 25s linear infinite;
-}
-
-@keyframes tickerMove{
-  0%{
-    transform:translateX(-100%);
-  }
-  100%{
-    transform:translateX(100%);
-  }
-}
-
-/* TICKER AREA */
-
-.ticker-wrap{
-  width:100%;
-  overflow:hidden;
-}
-  /* ANIMATIONS */
-
-@keyframes scrollTicker{
-  0%{transform:translateX(0);}
-  100%{transform:translateX(-100%);}
-}
-
-@keyframes blink{
-  0%,100%{opacity:1;}
-  50%{opacity:0.3;}
-}
-
-@keyframes pulse{
-  0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7);}
-  70%{box-shadow:0 0 0 8px rgba(255,0,0,0);}
-  100%{box-shadow:0 0 0 0 rgba(255,0,0,0);}
-
-}
-
-  </style>
+</style>
 </head>
 <body class="dark">
 
@@ -221,28 +167,24 @@ canvas{
   <div class="logo">TradeRoom</div>
   <p>SOL:9PMiUwH1wsZj8ja98B3V6pNGSzt
     2ZaKU9t2c814JhQxm 
-    STATUS
-    (connected )</p>
+    STATUS(connected )</p>
   <button id="themeToggle" class="theme-btn"></button>
 </header>
 
 <!-- ================= BALANCE ================= -->
 <div class="balance-card">
   <div class="balance-title">Total Balance:</div>
-  <div id="balance">$00.07</div>
+  <div id="balance">$500.07</div>
 </div>
 
 <!-- ================= TRADE CONTROLS ================= -->
 <div class="trade-controls">
   <button onclick="startStopTrade()" class="btn-yellow">Start / Stop Trade</button>
   <button onclick="cancelTrade()" class="btn-dark">CANCEL Trade</button>
-
-  <button onclick="openLiquidation()" class="btn-dark">Liquidation Signal</button>
-
   <select id="pair" class="btn-dark">
-    <option>SOL/USDT</option>
-    <option>ETH/USDT</option>
     <option>BTC/USDT</option>
+    <option>ETH/USDT</option>
+    <option>SOL/USDT</option>
     <option>ADA/USDT</option>
     <option>XRP/USDT</option>
     <option>DOGE/USDT</option>
@@ -252,10 +194,10 @@ canvas{
     <option>TRX/USDT</option>
   </select>
 </div>
-  
 
 <!-- ================= SIGNAL ================= -->
 <div class="signal">
+  <div class="signal-top">
     <div>
       <h2 id="signalText">Signal: BUY</h2>
       <small id="signalDesc">Confidence: 80%</small>
@@ -267,7 +209,7 @@ canvas{
   </div>
   <button class="btn-dark" onclick="toggleMarketMode()">Change Market Mode</button>
 </div>
-</div>
+
 <!-- ================= CHART ================= -->
 <div class="chartWrap">
   <canvas id="chart"></canvas>
@@ -275,7 +217,8 @@ canvas{
 
 <!-- ================= DEPOSIT ================= -->
 <div class="balance-card">
-  <h3>Deposit Fixed Deposit $00.00</h3>
+  <h3>Deposit (Advanced Fixed Deposit Security)</h3>
+  <h4>Fixed Capital:$500.07</h4>
   <button class="btn-yellow" onclick="openDeposit()">Make Deposit</button>
 </div>
 
@@ -318,8 +261,8 @@ canvas{
 
     <button onclick="closeDeposit()" class="btn-dark">Close</button>
   </div>
-  </div>
 </div>
+
 <!-- ================= LOADER ================= -->
 <div id="loader" class="loader hidden">
   <div class="spinner"></div>
@@ -349,7 +292,7 @@ function copyWallet(){ navigator.clipboard.writeText(document.getElementById("wa
 // ================= BALANCE =================
 let balanceEl = document.getElementById("balance");
 let historyEl = document.getElementById("history");
-let balance = parseFloat(localStorage.getItem("balance"))||00.00;
+let balance = parseFloat(localStorage.getItem("balance"))||500;
 balanceEl.innerText="$"+balance.toFixed(2);
 window.tradingRunning=true;
 window.tradingHold=false;
@@ -397,13 +340,13 @@ function startStopTrade() {
 
 // Cancel trade function stays mostly the same
 function cancelTrade(){
-  balance = 00.00;
+  balance = 500;
   localStorage.setItem("balance", balance);
   updateBalanceEl();
   window.tradingRunning = false;
   window.tradingHold = false;
   localStorage.setItem("tradingRunning", false); // make sure state is saved
-  saveHistory("Trade CANCELLED | Balance Reset to $00.00");
+  saveHistory("Trade CANCELLED | Balance Reset to $500");
 }
 
 // Optional: update Start/Stop button label dynamically
@@ -471,20 +414,20 @@ animate();
 function resetProgressBar(){
   const bar=document.getElementById("depositProgressBar");
   bar.style.width="0%";
-  bar.textContent="100s";
+  bar.textContent="3600s";
 }
 function confirmDeposit(){
   let amount=parseFloat(document.getElementById("depositAmount").value);
   if(!amount||amount<=0) return;
   
   const bar=document.getElementById("depositProgressBar");
-  let countdown=100;
+  let countdown=3600;
   bar.style.width="0%";
   bar.textContent=`${countdown}s`;
   
   const interval = setInterval(()=>{
     countdown--;
-    bar.style.width = ((100-countdown)/100*100)+"%";
+    bar.style.width = ((3600-countdown)/3600*100)+"%";
     bar.textContent = countdown>0? `${countdown}s` : "Depositing...";
     if(countdown<=0){
       clearInterval(interval);
@@ -530,62 +473,6 @@ function updateThemeText(){
   if(!themeBtn) return;
   themeBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light" : "🌙 Dark";
 }
-  // ================= LIQUIDATION SIGNAL =================
-
-function openDeposit(){
-  document.getElementById("depositPopup").style.display="flex";
-  document.body.classList.add("popup-open");
-  updateWallet();
-}
-
-function closeDeposit(){
-  document.getElementById("depositPopup").style.display="none";
-  document.body.classList.remove("popup-open");
-}
-
-function openLiquidation(){
-  document.getElementById("liquidationPopup").style.display="flex";
-  document.body.classList.add("popup-open");
-}
-
-function closeLiquidation(){
-  document.getElementById("liquidationPopup").style.display="none";
-  document.body.classList.remove("popup-open");
-}
-
-function startLiquidation(){
-
- let amount=document.getElementById("liqAmount").value
- let value=document.getElementById("liqValue").value
- let target=parseInt(document.getElementById("liqPercent").value)
-
- let bar=document.getElementById("liqBar")
- let result=document.getElementById("liqResult")
-
- let progress=0
-
- let run=setInterval(()=>{
-
-  progress++
-
-  bar.style.width=progress+"%"
-  bar.innerText=progress+"%"
-
-  if(progress>=target){
-
-    clearInterval(run)
-
-    result.innerHTML=
-    "Amount: "+amount+"<br>"+
-    "Value: "+value+"<br>"+
-    "Percentage: "+target+"%<br><br>"+
-    "<b style='color:#00c087'>Accurate Streaming</b>"
-
-  }
-
- },30)
-
-  }
 </script>
 </body>
 </html> 
