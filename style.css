@@ -1,0 +1,141 @@
+/* ==============================
+   BINANCE YELLOW / BLACK SYSTEM
+============================== */
+
+body.dark{
+  --bg-main:#0b0e11;
+  --bg-card:#161a1e;
+  --bg-card-2:#1e2329;
+  --text-main:#eaecef;
+  --text-muted:#848e9c;
+  --border:#2b3139;
+  --yellow:#f0b90b;
+  --green:#0ecb81;
+  --red:#f6465d;
+}
+
+body.light{
+  --bg-main:#f5f5f5;
+  --bg-card:#ffffff;
+  --bg-card-2:#f0f0f0;
+  --text-main:#1e2329;
+  --text-muted:#6f7785;
+  --border:#e6e8ea;
+  --yellow:#f0b90b;
+  --green:#0ecb81;
+  --red:#f6465d;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+}
+
+body{
+  background:var(--bg-main);
+  color:var(--text-main);
+  min-height:100vh;
+  transition:.25s;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px 20px;
+  background:var(--bg-card);
+  border-bottom:1px solid var(--border);
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:700;
+  color:var(--yellow);
+}
+
+.logo img{
+  width:28px;
+}
+
+.theme-btn{
+  background:var(--bg-card-2);
+  border:1px solid var(--border);
+  color:var(--text-main);
+  padding:8px 14px;
+  border-radius:20px;
+  cursor:pointer;
+}
+
+.balance-card{
+  margin:20px;
+  padding:20px;
+  background:var(--bg-card-2);
+  border-radius:12px;
+}
+
+.balance-title{
+  font-size:14px;
+  color:var(--text-muted);
+}
+
+#balance{
+  font-size:28px;
+  font-weight:700;
+}
+
+.btn-group,
+.trade-controls{
+  display:flex;
+  gap:12px;
+  margin:0 20px 20px;
+}
+
+.btn{
+  flex:1;
+  padding:12px;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+}
+
+.btn-yellow{
+  background:var(--yellow);
+  color:#000;
+}
+
+.btn-dark{
+  background:var(--bg-card);
+  color:var(--text-main);
+  border:1px solid var(--border);
+}
+
+.loader{
+  position:fixed;
+  inset:0;
+  background:rgba(11,14,17,.95);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.hidden{ display:none; }
+
+.spinner{
+  width:40px;
+  height:40px;
+  border:3px solid var(--border);
+  border-top:3px solid var(--yellow);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to{ transform:rotate(360deg); }
+}
