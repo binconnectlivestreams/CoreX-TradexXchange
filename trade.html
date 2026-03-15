@@ -165,8 +165,9 @@ canvas{
 <!-- ================= HEADER ================= -->
 <header class="header">
   <div class="logo">TradeRoom</div>
-  <p>SOL: 
-    STATUS(loading.. )</p>
+  <p>SOL:9PMiUwH1wsZj8ja98B3V6pNGSzt
+    2ZaKU9t2c814JhQxm 
+    STATUS(connected )</p>
   <button id="themeToggle" class="theme-btn"></button>
 </header>
 
@@ -217,7 +218,7 @@ canvas{
 <!-- ================= DEPOSIT ================= -->
 <div class="balance-card">
   <h3>Deposit (Advanced Fixed Deposit Security)</h3>
-  <h4>Fixed Capital:$00.0</h4>
+  <h4>Fixed Capital:$500.07</h4>
   <button class="btn-yellow" onclick="openDeposit()">Make Deposit</button>
 </div>
 
@@ -339,13 +340,13 @@ function startStopTrade() {
 
 // Cancel trade function stays mostly the same
 function cancelTrade(){
-  balance = 00.00;
+  balance = 500;
   localStorage.setItem("balance", balance);
   updateBalanceEl();
   window.tradingRunning = false;
   window.tradingHold = false;
   localStorage.setItem("tradingRunning", false); // make sure state is saved
-  saveHistory("Trade CANCELLED | Balance Reset to $000");
+  saveHistory("Trade CANCELLED | Balance Reset to $500");
 }
 
 // Optional: update Start/Stop button label dynamically
@@ -474,4 +475,4 @@ function updateThemeText(){
 }
 </script>
 </body>
-</html> 
+  </html>
