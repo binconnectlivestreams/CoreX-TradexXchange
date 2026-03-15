@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaTrade Dashboard</title>
+
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+
+<body class="dark">
+
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <div class="logo">BINANCE EXCHANGE</div>
+  <button id="WELCOME" class="theme-btn"></button>
+</header>
+
+<!-- ================= MARKET TITLE ================= -->
+<div class="balance-card">
+  <div class="balance-title">Live Markets (Streaming Markets Simulation Live Feeds Updates)</div>
+</div>
+
+<!-- ================= MARKET GRID ================= -->
+<div id="market" class="market-grid"></div>
+
+<!-- ================= ACTION BUTTONS ================= -->
+<div class="btn-group">
+  <button class="btn btn-yellow" onclick="goToTrade()">Trade</button>
+  <button class="btn btn-dark" onclick="location.href='index.html'">Logout</button>
+</div>
+
+<!-- ================= LOADING OVERLAY ================= -->
+<div id="loader" class="loader hidden">
+  <div class="spinner"></div>
+  <p>Loading trade room...</p>
+</div>
+
+<!-- ================= MARKET SCRIPT ================= -->
+<script>
+const coins = [
+  "bitcoin","ethereum","solana","cardano","ripple",
+  "dogecoin","polkadot","litecoin","avalanche-2","tron"
+];
+
+let previousData = {};
+
+async function loadMarket(){
+  try{
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coins.join(',')}&vs_currencies=usd`
+    );
+    const data = await res.json();
+    const container = document.getElementById("market");
+    container.innerHTML = "";
+
+    coins.forEach(coin=>{
+      if(!data[coin]) return;
+
+      let cls = "";
+      if(previousData[coin]){
+        if(data[coin].usd > previousData[coin]) cls = "blink-green";
+        else if(data[coin].usd < previousData[coin]) cls = "blink-red";
+      }
+
+      container.innerHTML += `
+        <div class="balance-card">
+          <div class="balance-title">${coin.toUpperCase()}</div>
+          <div class="${cls}">$${data[coin].usd.toLocaleString()}</div>
+        </div>
+      `;
+    });
+
+    coins.forEach(c => previousData[c] = data[c]?.usd);
+
+  }catch(err){
+    console.error("Market data error:", err);
+  }
+}
+
+loadMarket();
+setInterval(loadMarket, 15000);
+</script>
+
+<!-- ================= TRADE REDIRECT SCRIPT ================= -->
+<script>
+function goToTrade(){
+  const loader = document.getElementById("loader");
+  loader.classList.remove("hidden");
+
+  setTimeout(() => {
+    window.location.href = "trade.html";
+  }, 1800);
+}
+</script>
+
+</body>
+</html>
